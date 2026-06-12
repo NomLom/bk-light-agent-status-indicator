@@ -9,9 +9,9 @@ WHITE_THRESHOLD = 220
 
 STATE_COLORS: dict[str, tuple[int, int, int]] = {
     "idle": (0, 0, 0),
-    "thinking": (0, 0, 0),
-    "tool_use": (0, 0, 0),
-    "permission": (0, 0, 0),
+    "thinking": (0, 0, 24),
+    "tool_use": (18, 0, 24),
+    "permission": (30, 18, 0),
     "success": (0, 18, 0),
     "failed": (22, 0, 0),
     "cancelled": (16, 8, 0),
