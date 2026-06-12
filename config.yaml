@@ -19,3 +19,6 @@ agent_status:
     thinking: "🧠"
     tool_use: "⚙️"
     permission: "🔔"
+    success: "✅"
+    failed: "❌"
+    cancelled: "⏹️"

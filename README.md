@@ -4,7 +4,7 @@ Turns a BK-Light 32x32 BLE panel into a Hermes Agent status lamp.
 
 What changed from the original Claude Code project:
 - the panel runner is still here
-- status files are now written by a Hermes plugin using Hermes hook callbacks
+- status files can now be written either by a Hermes plugin (hooks fallback) or by a Hermes API/SSE watcher (preferred when you want richer state)
 - default status directory is `/tmp/hermes_agent_status`
 - config key is now `agent_status:`
 - a generic JSON hook script is included for manual tests and other hook-driven agents
@@ -14,10 +14,13 @@ States
 - thinking -> 🧠
 - tool_use -> ⚙️
 - permission -> 🔔
+- success -> ✅
+- failed -> ❌
+- cancelled -> ⏹️
 
 How it works
-1. Hermes plugin hooks observe session/tool/approval lifecycle.
-2. The plugin writes one state file per active session.
+1. Hermes plugin hooks or Hermes API/SSE events observe session/tool/approval lifecycle.
+2. The selected bridge writes one state file per active session.
 3. `python run.py` watches those files and pushes the corresponding image to the BK-Light panel.
 4. Multiple sessions split across the panel as a 2x2 grid.
 
@@ -30,6 +33,7 @@ Requirements
 Repository layout
 - `plugin.yaml` + `__init__.py`: Hermes plugin entrypoint
 - `agent_status/hermes_plugin.py`: Hermes hook bridge
+- `agent_status/api_bridge.py`: Hermes API/SSE bridge
 - `agent_status/runner.py`: panel watcher / renderer
 - `scripts/install_hermes_plugin.sh`: symlink this repo into `~/.hermes/plugins/` and enable it
 - `scripts/status_file_hook.py`: generic hook-driven JSON -> state-file bridge
@@ -66,12 +70,35 @@ agent_status:
     thinking: "🧠"
     tool_use: "⚙️"
     permission: "🔔"
+    success: "✅"
+    failed: "❌"
+    cancelled: "⏹️"
 ```
 
 Run the lamp
 ```bash
 source .venv/bin/activate
 python run.py
+```
+
+API-first bridge
+Use this when you are driving Hermes through its API server and want richer state transitions.
+
+Create a run and mirror its state to the lamp files:
+```bash
+python3 -m agent_status.api_bridge run \
+  --base-url http://127.0.0.1:8642 \
+  --api-key "$API_SERVER_KEY" \
+  --session-id lamp-demo \
+  "Use the terminal tool to run `hostname` and then reply DONE."
+```
+
+Attach to an existing run id:
+```bash
+python3 -m agent_status.api_bridge watch <run_id> \
+  --base-url http://127.0.0.1:8642 \
+  --api-key "$API_SERVER_KEY" \
+  --session-id lamp-demo
 ```
 
 Find the panel address
@@ -118,8 +145,13 @@ run `rm -rf /tmp/definitely-not-real` and deny it
 ```
 The lamp should flip to `permission` while Hermes waits.
 
+Verified API/SSE flow
+- `thinking` -> `tool_use` -> `permission` was observed live against a loopback Hermes API server.
+- After approval response (`choice=once`), the run completed successfully and returned `DONE`.
+
 Notes
-- Hermes one-shot mode (`-z`) auto-bypasses approvals, so it will not exercise `permission`.
+- Hermes one-shot mode (`-z`) auto-bypasses approvals, so it will not exercise `permission` on the hook path.
+- The API/SSE bridge can surface richer live states, including `success`, `failed`, and `cancelled`.
 - The plugin uses `BK_LIGHT_STATUS_DIR` if you want a different state directory.
 - The runner also accepts the legacy `claude_status:` config block for compatibility, but new config should use `agent_status:`.
 

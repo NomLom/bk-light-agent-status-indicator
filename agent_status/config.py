@@ -18,6 +18,9 @@ _DEFAULT_STATUSES: dict[str, str] = {
     "thinking": "🧠",
     "tool_use": "⚙️",
     "permission": "🔔",
+    "success": "✅",
+    "failed": "❌",
+    "cancelled": "⏹️",
 }
 
 

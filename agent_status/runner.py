@@ -23,7 +23,7 @@ from .display import (
 from .emoji_font import resolve_emoji_font
 from .watcher import SessionWatcher
 
-VALID_STATES = {"idle", "thinking", "tool_use", "permission"}
+VALID_STATES = {"idle", "thinking", "tool_use", "permission", "success", "failed", "cancelled"}
 POLL_INTERVAL = 0.3
 REFRESH_INTERVAL = 10.0
 

@@ -12,6 +12,9 @@ STATE_COLORS: dict[str, tuple[int, int, int]] = {
     "thinking": (0, 0, 0),
     "tool_use": (0, 0, 0),
     "permission": (0, 0, 0),
+    "success": (0, 18, 0),
+    "failed": (22, 0, 0),
+    "cancelled": (16, 8, 0),
 }
 
 EMPTY_BG = (5, 5, 5)
