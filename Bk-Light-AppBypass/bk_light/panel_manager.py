@@ -49,6 +49,7 @@ class PanelManager:
             raise ValueError("No panel configured. Set device.address or define panels list in config.yaml.")
         session = BleDisplaySession(
             address=address,
+            name_prefix=getattr(self.config.device, "name_prefix", None),
             auto_reconnect=self.config.device.auto_reconnect,
             reconnect_delay=self.config.device.reconnect_delay,
             rotation=self.config.device.rotate,

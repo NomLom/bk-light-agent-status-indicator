@@ -90,6 +90,7 @@ class BleDisplaySession:
     def __init__(
         self,
         address: Optional[str] = None,
+        name_prefix: Optional[str] = None,
         auto_reconnect: bool = True,
         reconnect_delay: float = 2.0,
         rotation: int = 0,
@@ -100,9 +101,10 @@ class BleDisplaySession:
         scan_timeout: float = 6.0,
     ) -> None:
         resolved = address or DEFAULT_ADDRESS
-        if not resolved:
-            raise ValueError("Missing target address. Pass it explicitly or set BK_LIGHT_ADDRESS.")
+        if not resolved and not name_prefix:
+            raise ValueError("Missing target address or name_prefix. Pass one explicitly or set BK_LIGHT_ADDRESS.")
         self.address = resolved
+        self.name_prefix = name_prefix
         self.auto_reconnect = auto_reconnect
         self.reconnect_delay = reconnect_delay
         self.rotation = rotation
@@ -139,25 +141,37 @@ class BleDisplaySession:
                     return
                 if self.client:
                     await self._safe_disconnect()
-                try:
-                    device = await BleakScanner.find_device_by_address(
-                        self.address, timeout=self.scan_timeout, cached=False
-                    )
-                except TypeError:
-                    device = await BleakScanner.find_device_by_address(
-                        self.address, timeout=self.scan_timeout
-                    )
-                if device is None:
+                device = None
+                if self.address:
                     try:
                         device = await BleakScanner.find_device_by_address(
-                            self.address, timeout=self.scan_timeout, cached=True
+                            self.address, timeout=self.scan_timeout, cached=False
                         )
                     except TypeError:
                         device = await BleakScanner.find_device_by_address(
                             self.address, timeout=self.scan_timeout
                         )
+                    if device is None:
+                        try:
+                            device = await BleakScanner.find_device_by_address(
+                                self.address, timeout=self.scan_timeout, cached=True
+                            )
+                        except TypeError:
+                            device = await BleakScanner.find_device_by_address(
+                                self.address, timeout=self.scan_timeout
+                            )
+                if device is None and self.name_prefix:
+                    devices = await BleakScanner.discover(timeout=self.scan_timeout)
+                    prefix = self.name_prefix.upper()
+                    for candidate in devices:
+                        name = (candidate.name or "").upper()
+                        if name.startswith(prefix):
+                            device = candidate
+                            self.address = candidate.address
+                            break
                 if device is None:
-                    raise BleakError(f"Device with address {self.address} was not found")
+                    target = self.address or f"name prefix {self.name_prefix!r}"
+                    raise BleakError(f"Device {target} was not found")
                 self.client = BleakClient(device)
                 self.watcher = AckWatcher(self.log_notifications)
                 await self.client.connect()

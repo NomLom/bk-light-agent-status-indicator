@@ -32,6 +32,7 @@ def is_image_path(value: str) -> bool:
 @dataclass
 class DeviceSettings:
     address: str | None = None
+    name_prefix: str | None = "BK"
     auto_reconnect: bool = True
     reconnect_delay: float = 2.0
     mtu: int = 2048
@@ -142,6 +143,8 @@ def to_app_config(config: AgentStatusConfig):
         brightness=config.device.brightness,
         scan_timeout=config.device.scan_timeout,
     )
+    if config.device.name_prefix is not None:
+        setattr(device, "name_prefix", config.device.name_prefix)
     panels = PanelsConfig(
         tile_width=config.panel.tile_width,
         tile_height=config.panel.tile_height,

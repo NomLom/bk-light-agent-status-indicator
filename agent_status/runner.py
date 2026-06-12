@@ -209,9 +209,9 @@ def main() -> None:
     if args.address:
         config = replace(config, device=replace(config.device, address=args.address))
 
-    if not config.device.address:
-        print("Error: No BLE address configured.")
-        print("Set device.address in config.yaml or use --address flag.")
+    if not config.device.address and not config.device.name_prefix:
+        print("Error: No BLE discovery target configured.")
+        print("Set device.address, device.name_prefix, or use --address flag.")
         sys.exit(1)
 
     asyncio.run(run(config, verbose=args.verbose))
