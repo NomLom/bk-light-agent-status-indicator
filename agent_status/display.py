@@ -6,6 +6,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 EMOJI_NATIVE_SIZE = 160
 WHITE_THRESHOLD = 220
+EMOJI_FONT_SIZE_CANDIDATES = [160, 136, 128, 109, 96, 72, 64, 48, 32]
 
 STATE_COLORS: dict[str, tuple[int, int, int]] = {
     "idle": (0, 0, 0),
@@ -46,13 +47,24 @@ def render_fullscreen_png(path: Path, canvas_size: tuple[int, int]) -> Image.Ima
 
 
 def render_emoji_sprite(emoji: str, size: int, font_path: Path) -> Image.Image:
-    font = ImageFont.truetype(str(font_path), EMOJI_NATIVE_SIZE)
-    canvas = Image.new("RGBA", (EMOJI_NATIVE_SIZE, EMOJI_NATIVE_SIZE), (0, 0, 0, 0))
+    last_error: Exception | None = None
+    font = None
+    native_size = EMOJI_NATIVE_SIZE
+    for candidate in EMOJI_FONT_SIZE_CANDIDATES:
+        try:
+            font = ImageFont.truetype(str(font_path), candidate)
+            native_size = candidate
+            break
+        except OSError as err:
+            last_error = err
+    if font is None:
+        raise RuntimeError(f"Unable to load emoji font at any supported size: {font_path}") from last_error
+    canvas = Image.new("RGBA", (native_size, native_size), (0, 0, 0, 0))
     draw = ImageDraw.Draw(canvas)
     bbox = draw.textbbox((0, 0), emoji, font=font, embedded_color=True)
     tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
-    x = (EMOJI_NATIVE_SIZE - tw) // 2 - bbox[0]
-    y = (EMOJI_NATIVE_SIZE - th) // 2 - bbox[1]
+    x = (native_size - tw) // 2 - bbox[0]
+    y = (native_size - th) // 2 - bbox[1]
     draw.text((x, y), emoji, font=font, embedded_color=True)
     return canvas.resize((size, size), Image.LANCZOS)
 
