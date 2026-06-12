@@ -1,0 +1,4 @@
+name: bk-light-status
+version: 1.0.0
+description: "BK-Light status bridge for Hermes Agent. Registers hook callbacks that write per-session state files for the BK-Light panel runner."
+author: NomLom / Hermes

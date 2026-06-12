@@ -1,0 +1,21 @@
+device:
+  address: "YOUR-BLE-DEVICE-ADDRESS"
+  auto_reconnect: true
+  reconnect_delay: 2.0
+  mtu: 2048
+  brightness: 0.35
+  scan_timeout: 6.0
+
+panels:
+  tile_width: 32
+  tile_height: 32
+
+agent_status:
+  status_dir: "/tmp/hermes_agent_status"
+  stale_threshold: 3600
+  # emoji_font: "/path/to/your/emoji-font.ttf"  # auto-detected if not set
+  statuses:
+    idle: "😴"
+    thinking: "🧠"
+    tool_use: "⚙️"
+    permission: "🔔"
