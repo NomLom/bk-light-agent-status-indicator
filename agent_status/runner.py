@@ -177,8 +177,7 @@ async def run(config: AgentStatusConfig, verbose: bool = False) -> None:
                         current = slots.snapshot(states)
                         now = time.monotonic()
                         changed = current != last_snapshot
-                        stale = now - last_send_time >= REFRESH_INTERVAL
-                        if changed or stale:
+                        if changed:
                             active_count = sum(1 for s in current if s)
                             parts = [s or "---" for s in current]
                             lamp_state = classify_state(current)
