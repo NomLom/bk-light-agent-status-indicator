@@ -46,7 +46,7 @@ Repository layout
 Install
 ```bash
 git clone --recurse-submodules <your-repo-url>
-cd bk-light-agent-status-indicator
+cd moonside-agent-status-indicator
 
 python3 -m venv .venv
 source .venv/bin/activate
@@ -57,7 +57,7 @@ bash scripts/install_hermes_plugin.sh
 If you prefer manual plugin install:
 ```bash
 mkdir -p ~/.hermes/plugins
-ln -s /ABS/PATH/TO/bk-light-agent-status-indicator ~/.hermes/plugins/moonside-status
+ln -s /ABS/PATH/TO/moonside-agent-status-indicator ~/.hermes/plugins/moonside-status
 hermes plugins enable moonside-status
 ```
 
